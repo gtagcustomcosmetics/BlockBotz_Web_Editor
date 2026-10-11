@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1117">
+  <title>Blockbotz Level Builder</title>
+  <!-- build: collab+focus 2026-10-10 -->
+  <link rel="stylesheet" href="./main.css">
+</head>
+<body>
+
+<div id="app">
+  <div id="topbar">
+    <div id="brand">
+      <img id="brand-icon" src="" alt="Blockbotz" />
+      <img id="brand-wordmark" src="" alt="Blockbotz" />
+      <span class="sub">Level Builder</span>
+    </div>
+    <div class="divider"></div>
+    <div id="modebar">
+      <button class="modebtn" data-mode="translate">Move <kbd>W</kbd></button>
+      <button class="modebtn" data-mode="rotate">Rotate <kbd>E</kbd></button>
+      <button class="modebtn" data-mode="scale">Scale <kbd>R</kbd></button>
+    </div>
+    <div class="divider"></div>
+    <button class="btn icon-only" id="btn-undo" title="Undo (Ctrl+Z)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7"/></svg>
+    </button>
+    <button class="btn icon-only" id="btn-redo" title="Redo (Ctrl+Shift+Z)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M21 13a9 9 0 1 1-3-7"/></svg>
+    </button>
+    <div id="topbar-right">
+      <input type="file" id="file-input" accept="application/json">
+      <button class="btn" id="btn-templates">Templates</button>
+      <button class="btn" id="btn-save-game">Save Game</button>
+      <button class="btn" id="btn-load-game">Load Game</button>
+      <button class="btn" id="btn-imported" style="display:none">Imported Maps</button>
+      <button class="btn" id="btn-collab">Collaborate</button>
+      <button class="btn" id="btn-new">New</button>
+      <button class="btn" id="btn-import">Import JSON</button>
+      <button class="btn primary" id="btn-export">Export JSON</button>
+    </div>
+  </div>
+
+  <div id="body">
+    <div id="palette">
+      <div class="palette-label">SHAPES</div>
+      <button class="shape-btn" data-shape="Cube" title="Add Cube">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 7v10l8 4 8-4V7"/><path d="M12 11v10"/></svg>
+        <span>Cube</span>
+      </button>
+      <button class="shape-btn" data-shape="Cylinder" title="Add Cylinder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12a7 3 0 0 0 14 0V6"/></svg>
+        <span>Cylinder</span>
+      </button>
+      <button class="shape-btn" data-shape="Sphere" title="Add Sphere">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><ellipse cx="12" cy="12" rx="8.5" ry="3.2"/><path d="M3.5 12h17"/></svg>
+        <span>Sphere</span>
+      </button>
+      <button class="shape-btn" data-shape="Spawn" title="Add Spawn Pad">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l8-4 8 4-8 4-8-4z"/><path d="M12 12v9"/><path d="M12 12l-8-4"/><path d="M12 12l8-4"/></svg>
+        <span>Spawn</span>
+      </button>
+      <button class="shape-btn" data-shape="Light" title="Add Light">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>
+        <span>Light</span>
+      </button>
+      <div class="palette-label">EDIT</div>
+      <button class="shape-btn" id="btn-duplicate" title="Duplicate (Ctrl+D)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="8" y="8" width="12" height="12" rx="1.5"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/></svg>
+        <span>Dupe</span>
+      </button>
+      <button class="shape-btn" id="btn-delete" title="Delete (Del)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>
+        <span>Delete</span>
+      </button>
+      <button class="shape-btn" id="btn-group" title="Group selected (Shift+Click to multi-select)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="9" height="9" rx="1.5"/><rect x="12" y="12" width="9" height="9" rx="1.5"/></svg>
+        <span>Group</span>
+      </button>
+    </div>
+
+    <div id="viewport-wrap">
+      <div id="viewport"></div>
+      <div id="loading-msg"></div>
+      <div id="toast"></div>
+      <div id="hint">
+        <span><b>Click</b> select</span>
+        <span><b>Shift+Click</b> multi-select</span>
+        <span><b>W/E/R</b> move/rotate/scale</span>
+        <span><b>F</b> focus</span>
+        <span><b>Ctrl+C/V</b> copy/paste</span>
+        <span><b>Del</b> delete</span>
+        <span><b>Ctrl+Z</b> undo</span>
+        <span><b>RMB+WASD</b> fly</span>
+      </div>
+      <div id="joystick"><div id="joy-knob"></div></div>
+      <div id="mobile-tools">
+        <button class="btn" id="mt-up">&#9650; Up</button>
+        <button class="btn" id="mt-down">&#9660; Down</button>
+        <button class="btn" id="mt-focus">Focus</button>
+        <button class="btn" id="mt-multi">Multi-select</button>
+      </div>
+      <div id="snap-toggle">
+        <div class="pill" id="pill-snap">Snap: Off</div>
+      </div>
+    </div>
+
+    <div id="rightpanel">
+      <div id="obj-list-section">
+        <div class="panel-heading">OBJECTS <span class="count" id="obj-count">0</span></div>
+        <div id="obj-list"></div>
+      </div>
+      <div id="groups-section">
+        <div class="panel-heading">GROUPS <span class="count" id="group-count">0</span></div>
+        <div id="group-list"></div>
+      </div>
+      <div id="props-section">
+        <div id="empty-state">Select an object in the scene or object list, or add a new shape from the left palette.</div>
+        <div id="props-form" style="display:none;">
+          <div class="field-group">
+            <div class="field-group-title">NAME</div>
+            <input type="text" class="name-input" id="f-name" spellcheck="false">
+          </div>
+          <div class="field-group">
+            <div class="field-group-title">POSITION</div>
+            <div class="vec3">
+              <div class="vec3-field x"><span class="axis">X</span><input type="number" step="0.1" id="f-pos-x"></div>
+              <div class="vec3-field y"><span class="axis">Y</span><input type="number" step="0.1" id="f-pos-y"></div>
+              <div class="vec3-field z"><span class="axis">Z</span><input type="number" step="0.1" id="f-pos-z"></div>
+            </div>
+            <div class="field-group-title">ROTATION (°)</div>
+            <div class="vec3">
+              <div class="vec3-field x"><span class="axis">X</span><input type="number" step="1" id="f-rot-x"></div>
+              <div class="vec3-field y"><span class="axis">Y</span><input type="number" step="1" id="f-rot-y"></div>
+              <div class="vec3-field z"><span class="axis">Z</span><input type="number" step="1" id="f-rot-z"></div>
+            </div>
+            <div class="field-group-title">SCALE</div>
+            <div class="vec3">
+              <div class="vec3-field x"><span class="axis">X</span><input type="number" step="0.1" id="f-scale-x"></div>
+              <div class="vec3-field y"><span class="axis">Y</span><input type="number" step="0.1" id="f-scale-y"></div>
+              <div class="vec3-field z"><span class="axis">Z</span><input type="number" step="0.1" id="f-scale-z"></div>
+            </div>
+          </div>
+          <div class="field-group">
+            <div class="field-group-title">COLOR</div>
+            <div class="color-row">
+              <input type="color" id="f-color-picker" value="#4c9eeb">
+              <input type="text" id="f-color-hex" maxlength="9" placeholder="#RRGGBBAA">
+            </div>
+            <div class="row-label">MATERIAL</div>
+            <input type="text" class="mat-input" id="f-material" spellcheck="false">
+          </div>
+          <div class="field-group">
+            <div class="actions-row">
+              <button class="btn" id="btn-dupe-panel">Duplicate</button>
+              <button class="btn danger" id="btn-delete-panel">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="template-modal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <span>Start from a template</span>
+      <button class="modal-close" id="template-modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body" id="template-list"></div>
+  </div>
+</div>
+
+<div id="save-modal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-head"><span id="save-modal-title">Save Game</span><button class="modal-close" id="save-modal-close" aria-label="Close">&times;</button></div>
+    <div class="modal-body">
+      <div class="save-form"><input id="save-name-input" maxlength="80" placeholder="Game name"><button class="btn primary" id="save-confirm">Save</button></div>
+      <div class="save-note">Saves are stored in this browser for now. Cloud saves and cross-device accounts will come with the online system.</div>
+    </div>
+  </div>
+</div>
+
+<div id="load-modal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-head"><span>Load Game</span><button class="modal-close" id="load-modal-close" aria-label="Close">&times;</button></div>
+    <div class="modal-body" id="save-list"></div>
+  </div>
+</div>
+
+<div id="export-modal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-head"><span>Export Map</span><button class="modal-close" id="export-modal-close" aria-label="Close">&times;</button></div>
+    <div class="modal-body">
+      <div class="save-form"><input id="export-name-input" maxlength="80" placeholder="Map name"><button class="btn primary" id="export-confirm">Export</button></div>
+      <div class="save-note">The file downloads as <strong>name.json</strong>.</div>
+    </div>
+  </div>
+</div>
+
+<div id="imported-modal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-head"><span>Imported Maps</span><button class="modal-close" id="imported-modal-close" aria-label="Close">&times;</button></div>
+    <div class="modal-body" id="imported-list"></div>
+  </div>
+</div>
+
+<div id="collab-modal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-head"><span>Collaboration</span><button class="modal-close" id="collab-modal-close" aria-label="Close">&times;</button></div>
+    <div class="modal-body">
+      <div class="collab-status" id="collab-status"><strong>Browser-to-browser collaboration.</strong><br><br>No accounts. Create a room, copy the link, and send it to your friend.</div>
+      <div class="save-form" style="margin-top:12px"><input id="collab-name" maxlength="24" placeholder="Your builder name"><input type="color" id="collab-color" value="#55d6ff" title="Your color" style="width:42px;height:34px;padding:2px;flex:none;cursor:pointer"><button class="btn primary" id="collab-create">Create Room</button></div>
+      <div class="save-note" id="collab-room-note">The room stays tied to the browser tab that created it.</div>
+      <div class="save-form" style="margin-top:10px"><input id="collab-link" readonly placeholder="Room link appears here"><button class="btn" id="collab-copy" disabled>Copy Link</button></div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+<script src="./level-format.js"></script>
+<script src="./save-manager.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="./collaboration.js"></script>
+<script src="./main.js"></script>
+</body>
+</html>
